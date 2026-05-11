@@ -3,11 +3,12 @@ package org.sid.controle_jee.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.sid.controle_jee.dto.AgenceDTO;
 import org.sid.controle_jee.entities.Agence;
-import org.sid.controle_jee.mappers.VehiculeMapper;
+import org.sid.controle_jee.mapper.AgenceMapper;
 import org.sid.controle_jee.repository.AgenceRepository;
 import org.sid.controle_jee.service.AgenceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,38 +18,41 @@ import java.util.stream.Collectors;
 public class AgenceServiceImpl implements AgenceService {
 
     private final AgenceRepository agenceRepository;
-    private final VehiculeMapper mapper;
+    private final AgenceMapper agenceMapper;
 
     @Override
     public AgenceDTO createAgence(AgenceDTO agenceDTO) {
-        Agence agence = mapper.toAgenceEntity(agenceDTO);
+        Agence agence = agenceMapper.toEntity(agenceDTO);
         Agence saved = agenceRepository.save(agence);
-        return mapper.toAgenceDto(saved);
+        return agenceMapper.toDto(saved);
     }
 
     @Override
     public AgenceDTO getAgenceById(Long id) {
         Agence agence = agenceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Agence non trouvée"));
-        return mapper.toAgenceDto(agence);
+                .orElseThrow(() -> new RuntimeException("Agence non trouvée avec id: " + id));
+        return agenceMapper.toDto(agence);
     }
 
     @Override
     public List<AgenceDTO> getAllAgences() {
         return agenceRepository.findAll().stream()
-                .map(mapper::toAgenceDto)
+                .map(agenceMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public AgenceDTO updateAgence(Long id, AgenceDTO agenceDTO) {
         Agence agence = agenceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Agence non trouvée"));
+                .orElseThrow(() -> new RuntimeException("Agence non trouvée avec id: " + id));
+
         agence.setNom(agenceDTO.getNom());
         agence.setAdresse(agenceDTO.getAdresse());
         agence.setVille(agenceDTO.getVille());
         agence.setTelephone(agenceDTO.getTelephone());
-        return mapper.toAgenceDto(agenceRepository.save(agence));
+
+        Agence updated = agenceRepository.save(agence);
+        return agenceMapper.toDto(updated);
     }
 
     @Override
